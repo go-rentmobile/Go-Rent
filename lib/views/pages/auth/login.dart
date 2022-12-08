@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_rent/provider/auth_provider.dart';
 import 'package:go_rent/views/themes/colors.dart';
 import 'package:go_rent/views/themes/font_weights.dart';
+import 'package:go_rent/views/widgets/loading.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -10,13 +14,65 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  void saveLoginStatus() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString("email", emailController.text);
+    pref.setString("password", passwordController.text);
+  }
+
   bool showPassword = false;
+  bool isLoading = false;
+
+  final TextEditingController emailController = TextEditingController(text: '');
+  final TextEditingController passwordController =
+      TextEditingController(text: '');
 
   @override
   Widget build(BuildContext context) {
+    AuthProvider authProvider = Provider.of<AuthProvider>(context);
+
+    Future<void> doLogin() async {
+      setState(() {
+        isLoading = true;
+      });
+
+      if (await authProvider.login(
+        email: emailController.text,
+        password: passwordController.text,
+      )) {
+        saveLoginStatus();
+
+        Navigator.pushReplacementNamed(context, 'home');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: greenColor,
+            content: Text(
+              'Berhasil login',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: alertColor,
+            content: Text(
+              'Email atau Password yang dimasukkan salah!',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+    }
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
+          margin: const EdgeInsets.only(top: 30),
           padding: const EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,8 +125,9 @@ class _LoginPageState extends State<LoginPage> {
                       height: 10.0,
                     ),
                     TextFormField(
+                      autofocus: true,
                       keyboardType: TextInputType.emailAddress,
-                      controller: null,
+                      controller: emailController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -103,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                       height: 10.0,
                     ),
                     TextFormField(
-                      controller: null,
+                      controller: passwordController,
                       obscureText: !showPassword,
                       decoration: InputDecoration(
                         suffixIcon: IconButton(
@@ -132,24 +189,27 @@ class _LoginPageState extends State<LoginPage> {
               ),
 
               // BUTTON
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 40.0),
-                  width: 200.0,
-                  height: 50.0,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // <-- Radius
+              isLoading
+                  ? const LoadingWidget()
+                  : Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 40.0),
+                        width: 200.0,
+                        height: 50.0,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(12), // <-- Radius
+                            ),
+                          ),
+                          // onPressed: doLogin,
+                          onPressed: () => doLogin(),
+                          child: const Text("Login"),
+                        ),
                       ),
                     ),
-                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                        context, 'home', (route) => false),
-                    child: const Text("Login"),
-                  ),
-                ),
-              ),
               const SizedBox(
                 height: 20.0,
               ),

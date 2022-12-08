@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_rent/provider/auth_provider.dart';
 import 'package:go_rent/views/themes/colors.dart';
 import 'package:go_rent/views/themes/font_weights.dart';
+import 'package:go_rent/views/widgets/loading.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -10,13 +14,69 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  bool isLoading = false;
   bool showPassword = false;
+
+  TextEditingController usernameController = TextEditingController(text: '');
+  TextEditingController emailController = TextEditingController(text: '');
+  TextEditingController noHpController = TextEditingController(text: '');
+  TextEditingController alamatController = TextEditingController(text: '');
+  TextEditingController passwordController = TextEditingController(text: '');
+
+  void saveLoginStatus() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString("email", emailController.text);
+    pref.setString("password", passwordController.text);
+  }
 
   @override
   Widget build(BuildContext context) {
+    AuthProvider authProvider = Provider.of<AuthProvider>(context);
+
+    Future<void> doRegister() async {
+      setState(() {
+        isLoading = true;
+      });
+
+      if (await authProvider.register(
+          username: usernameController.text,
+          noHp: noHpController.text,
+          email: emailController.text,
+          alamat: alamatController.text,
+          password: passwordController.text)) {
+        saveLoginStatus();
+
+        Navigator.pushReplacementNamed(context, 'home');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: greenColor,
+            content: Text(
+              'Berhasil register',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: alertColor,
+            content: Text(
+              'Email sudah terdaftar',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+    }
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
+          margin: const EdgeInsets.only(top: 30),
           padding: const EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +129,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       height: 10.0,
                     ),
                     TextFormField(
-                      controller: null,
+                      autofocus: true,
+                      controller: usernameController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -103,7 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      controller: null,
+                      controller: emailController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -137,7 +198,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     TextFormField(
                       keyboardType: TextInputType.number,
-                      controller: null,
+                      controller: noHpController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -170,7 +231,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       height: 10.0,
                     ),
                     TextFormField(
-                      controller: null,
+                      controller: alamatController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -203,7 +264,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       height: 10.0,
                     ),
                     TextFormField(
-                      controller: null,
+                      controller: passwordController,
                       obscureText: !showPassword,
                       decoration: InputDecoration(
                         suffixIcon: IconButton(
@@ -232,24 +293,26 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
 
               // BUTTON
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 40.0),
-                  width: 200.0,
-                  height: 50.0,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // <-- Radius
+              isLoading
+                  ? const LoadingWidget()
+                  : Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 40.0),
+                        width: 200.0,
+                        height: 50.0,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(12), // <-- Radius
+                            ),
+                          ),
+                          onPressed: () => doRegister(),
+                          child: const Text("Daftar"),
+                        ),
                       ),
                     ),
-                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                        context, 'home', (route) => false),
-                    child: const Text("Daftar"),
-                  ),
-                ),
-              ),
               const SizedBox(
                 height: 20.0,
               ),
