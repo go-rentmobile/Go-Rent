@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_rent/provider/auth_provider.dart';
 import 'package:go_rent/views/themes/colors.dart';
@@ -37,9 +39,7 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       if (await authProvider.login(
-        email: emailController.text,
-        password: passwordController.text,
-      )) {
+          email: emailController.text, password: passwordController.text)) {
         saveLoginStatus();
 
         Navigator.pushReplacementNamed(context, 'home');

@@ -3,7 +3,10 @@ import 'package:go_rent/provider/auth_provider.dart';
 import 'package:go_rent/views/pages/auth/login.dart';
 import 'package:go_rent/views/pages/auth/register.dart';
 import 'package:go_rent/views/pages/edit_profile.dart';
+import 'package:go_rent/views/pages/home/detail_page.dart';
 import 'package:go_rent/views/pages/home/main_page.dart';
+import 'package:go_rent/views/pages/payment/checkout_screen.dart';
+import 'package:go_rent/views/pages/payment/payment_screen.dart';
 import 'package:go_rent/views/pages/splash_screen.dart';
 import 'package:go_rent/views/themes/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,6 +42,9 @@ class MyApp extends StatelessWidget {
           'register': (context) => const RegisterPage(),
           'home': (context) => const MainPage(),
           'edit-profile': (context) => const EditProfilePage(),
+          'detail-page': (context) => DetailPage(),
+          'checkout': (context) => CheckoutScreen(),
+          'payment': (context) => PaymentScreen(),
         },
       ),
     );

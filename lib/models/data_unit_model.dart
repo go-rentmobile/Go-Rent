@@ -4,7 +4,7 @@ class DataUnitModel {
   String? gambar;
   String? jeniskendaraan;
   String? jumlahroda;
-  String? hargasewa;
+  int? hargasewa;
 
   DataUnitModel(
       {this.idUnit,

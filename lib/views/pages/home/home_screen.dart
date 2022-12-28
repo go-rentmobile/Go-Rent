@@ -3,11 +3,13 @@ import 'package:go_rent/models/data_unit_model.dart';
 import 'package:go_rent/models/user_model.dart';
 import 'package:go_rent/provider/auth_provider.dart';
 import 'package:go_rent/services/data_unit_service.dart';
+import 'package:go_rent/views/pages/home/detail_page.dart';
 import 'package:go_rent/views/themes/colors.dart';
 import 'package:go_rent/views/themes/font_weights.dart';
 import 'package:go_rent/views/widgets/confirm_whatsapp.dart';
 import 'package:go_rent/views/widgets/loading.dart';
 import 'package:go_rent/views/widgets/product_card.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -242,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // SEARCH
           searchInput(),
           const SizedBox(
-            height: 40.0,
+            height: 30.0,
           ),
 
           // KATALOG PRODUCT
@@ -269,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // POPULAR PRODUCT
           const Padding(
-            padding: EdgeInsets.fromLTRB(10, 35, 20, 0),
+            padding: EdgeInsets.only(top: 10, left: 10),
             child: Text(
               "Populer",
               style: TextStyle(
@@ -278,52 +280,102 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          const SizedBox(
-            height: 20.0,
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 5.0,
-                ),
-                isLoading
-                    ? const LoadingWidget()
-                    : Row(
-                        children: products
-                            .map(
-                              (product) => InkWell(
-                                onTap: () => AccessWhatsApp.confirmWhatsApp(
-                                    context, user, product.nama!),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 5),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.network(
-                                      product.gambar!,
-                                      width: 180.0,
-                                      height: 120.0,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10, bottom: 12),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DetailPage(id_unit: products[index].idUnit),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 11, vertical: 10),
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFFDBDBDB),
+                          blurRadius: 3,
+                          offset: Offset(0, 0), // Shadow position
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 125,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0E0E0),
+                            borderRadius: BorderRadius.circular(10),
+                            image: DecorationImage(
+                              image: NetworkImage(products[index].gambar!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${products[index].nama}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: semibold,
                                 ),
                               ),
-                            )
-                            .toList(),
-                      ),
-                const SizedBox(
-                  width: 5.0,
+                              Row(
+                                children: [
+                                  Text(
+                                    "Rp${NumberFormat('#,###').format(products[index].hargasewa)}"
+                                        .replaceAll(",", "."),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: bold,
+                                      color: greenColor,
+                                    ),
+                                  ),
+                                  Text(
+                                    "/hari",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: medium,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       );
     }
 
     return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
